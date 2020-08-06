@@ -4,7 +4,7 @@ kind: Kustomization
 namespace: argocd
 
 resources:
-  - /base
+  - ./base
 
 patchesStrategicMerge:
   - overlays/argocd-server-service.yaml
