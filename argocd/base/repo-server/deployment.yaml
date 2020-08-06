@@ -1,0 +1,73 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: argocd-repo-server
+  labels:
+    app.kubernetes.io/name: argocd-repo-server
+    helm.sh/chart: argo-cd-2.6.0
+    app.kubernetes.io/instance: argocd
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: argocd
+    app.kubernetes.io/component: repo-server
+    app.kubernetes.io/version: "v1.6.2"
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: argocd-repo-server
+      app.kubernetes.io/instance: argocd
+  revisionHistoryLimit: 5
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: argocd-repo-server
+        helm.sh/chart: argo-cd-2.6.0
+        app.kubernetes.io/instance: argocd
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/part-of: argocd
+        app.kubernetes.io/component: repo-server
+        app.kubernetes.io/version: "v1.6.2"
+    spec:
+      containers:
+      - name: repo-server
+        image: argoproj/argocd:v1.6.2
+        imagePullPolicy: IfNotPresent
+        command:
+        - argocd-repo-server
+        - --redis
+        - argocd-redis:6379
+        - --loglevel
+        - info
+        volumeMounts:
+        - mountPath: /app/config/ssh
+          name: ssh-known-hosts
+        ports:
+        - name: repo-server
+          containerPort: 8081
+          protocol: TCP
+        
+        livenessProbe:
+          tcpSocket:
+            port: 8081
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 1
+          successThreshold: 1
+          failureThreshold: 3
+        readinessProbe:
+          tcpSocket:
+            port: 8081
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 1
+          successThreshold: 1
+          failureThreshold: 3
+        resources:
+          {}
+      serviceAccountName: default
+      volumes:
+      - configMap:
+          name: argocd-ssh-known-hosts-cm
+        name: ssh-known-hosts
+---

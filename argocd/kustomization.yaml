@@ -4,7 +4,7 @@ kind: Kustomization
 namespace: argocd
 
 resources:
-  - https://github.com/argoproj/argo-cd/manifests/cluster-install
+  - /base
 
 patchesStrategicMerge:
   - overlays/argocd-server-service.yaml
